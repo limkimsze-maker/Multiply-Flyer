@@ -7,8 +7,6 @@
 
 <style>
 :root{
-  --sky:#7dd9ff;
-  --sky2:#e0f8ff;
   --dark:#1f4152;
   --yellow:#ffcf33;
   --green:#22c55e;
@@ -24,7 +22,7 @@ html,body{
   inset:0;
   overscroll-behavior:none;
   font-family:"Comic Sans MS","Comic Neue",Arial,sans-serif;
-  background:linear-gradient(var(--sky),var(--sky2));
+  background:#7dd9ff;
   color:#123;
 }
 button,select{font-family:inherit}
@@ -285,7 +283,6 @@ select{
   color:#f59e0b;
   letter-spacing:3px;
 }
-
 @media(min-width:761px){
   .frame{
     width:min(1180px,100vw - 20px);
@@ -321,28 +318,6 @@ select{
   h2{font-size:34px}
   p{font-size:20px}
 }
-
-@media(max-width:760px) and (orientation:landscape){
-  .questionBox{
-    top:38px;
-    font-size:22px;
-  }
-  .feedback{top:84px}
-  .flapPad{
-    width:88px;
-    height:88px;
-    font-size:20px;
-    bottom:52px;
-  }
-  .soundBtn,.pauseBtn{
-    font-size:13px;
-    padding:7px 9px;
-  }
-  h1{font-size:28px}
-  h2{font-size:20px}
-  p{font-size:14px}
-  .setup{grid-template-columns:1fr 1fr}
-}
 </style>
 </head>
 
@@ -371,7 +346,7 @@ select{
       <div class="card">
         <h1>Multiply Flyer</h1>
         <h2>Clear all 12 facts with 3 lives!</h2>
-        <p>Tap the big button to flap. Fly through the correct product gate. You have 3 lives.</p>
+        <p>Tap the big button to flap. Read the large number badges and fly through the correct product gate.</p>
 
         <div class="setup">
           <div>
@@ -494,11 +469,15 @@ select{
   function resize(){
     const rect = frame.getBoundingClientRect();
     dpr = Math.min(window.devicePixelRatio || 1, 2);
+
     canvas.width = Math.floor(rect.width * dpr);
     canvas.height = Math.floor(rect.height * dpr);
+
     canvas.style.width = rect.width + "px";
     canvas.style.height = rect.height + "px";
+
     ctx.setTransform(dpr,0,0,dpr,0,0);
+
     W = rect.width;
     H = rect.height;
   }
@@ -511,7 +490,9 @@ select{
     if(!audioCtx){
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
-    if(audioCtx.state === "suspended") audioCtx.resume();
+    if(audioCtx.state === "suspended"){
+      audioCtx.resume();
+    }
   }
 
   function beep(type="tap"){
@@ -563,14 +544,14 @@ select{
 
   function config(){
     const cfg = {
-      easy:{speed:145,gap:148,gravity:790,flap:-310,spawn:1.0},
-      normal:{speed:180,gap:130,gravity:850,flap:-330,spawn:0.9},
-      challenge:{speed:220,gap:112,gravity:900,flap:-350,spawn:0.8}
+      easy:{speed:130,gap:168,gravity:760,flap:-300,spawn:1.05},
+      normal:{speed:155,gap:150,gravity:820,flap:-320,spawn:0.95},
+      challenge:{speed:185,gap:132,gravity:880,flap:-340,spawn:0.85}
     }[difficultyEl.value];
 
     if(isMobile()){
-      cfg.speed *= 0.82;
-      cfg.gap += 34;
+      cfg.speed *= 0.78;
+      cfg.gap += 24;
       cfg.gravity *= 0.92;
       cfg.flap *= 0.94;
       cfg.spawn += 0.15;
@@ -683,8 +664,10 @@ select{
     if(!running || paused || celebration) return;
 
     unlockAudio();
+
     bird.vy = settings.flap;
     bird.rot = -0.45;
+
     beep("tap");
 
     for(let i=0;i<5;i++){
@@ -703,9 +686,9 @@ select{
     const q = currentQ;
     const mobile = isMobile();
 
-    const playTop = mobile ? 118 : 105;
-    const playBottom = H * 0.70 - (mobile ? 18 : 0);
-    const laneH = (playBottom - playTop) / 3;
+    const playTop = mobile ? Math.max(135, H * 0.23) : 120;
+    const playBottom = mobile ? Math.min(H * 0.60, H - 210) : H * 0.68;
+    const laneH = Math.max(88, (playBottom - playTop) / 3);
 
     const laneCenters = [
       playTop + laneH * 0.5,
@@ -715,7 +698,7 @@ select{
 
     const gate = {
       x:W + 90,
-      w:mobile ? 150 : 112,
+      w:mobile ? 170 : 124,
       q,
       lanes:[],
       scored:false
@@ -1090,6 +1073,7 @@ select{
   function drawGates(){
     gates.forEach(g => {
       g.lanes.forEach(l => {
+        const mobile = isMobile();
         const y = l.y;
         const gap = settings.gap;
         const x = g.x;
@@ -1097,29 +1081,45 @@ select{
 
         ctx.fillStyle = "#35b66f";
         ctx.strokeStyle = "#12683b";
-        ctx.lineWidth = 4;
+        ctx.lineWidth = mobile ? 3 : 4;
 
-        roundedRect(x,y-gap/2-48,w,34,12,true,true);
-        roundedRect(x,y+gap/2+14,w,34,12,true,true);
+        roundedRect(x,y-gap/2-46,w,32,12,true,true);
+        roundedRect(x,y+gap/2+14,w,32,12,true,true);
 
-        ctx.fillStyle = "#fff";
+        const badgeW = mobile ? 136 : 112;
+        const badgeH = mobile ? 68 : 58;
+
+        const rawLabelX = x + w / 2;
+        const labelX = Math.max(
+          badgeW / 2 + 8,
+          Math.min(W - badgeW / 2 - 8, rawLabelX)
+        );
+
+        ctx.strokeStyle = "#1f4152";
+        ctx.lineWidth = mobile ? 4 : 3;
+        ctx.beginPath();
+        ctx.moveTo(labelX, y);
+        ctx.lineTo(x + w / 2, y);
+        ctx.stroke();
+
+        ctx.fillStyle = "#ffffff";
         ctx.strokeStyle = "#1f4152";
         ctx.lineWidth = 4;
-        roundedRect(x-10,y-38,w+20,76,18,true,true);
+        roundedRect(labelX - badgeW/2, y - badgeH/2, badgeW, badgeH, 18, true, true);
 
         ctx.fillStyle = "#fff8b8";
         ctx.strokeStyle = "#7c2d12";
         ctx.lineWidth = 3;
-        roundedRect(x-7,y-34,w+14,68,16,true,true);
+        roundedRect(labelX - badgeW/2 + 5, y - badgeH/2 + 5, badgeW - 10, badgeH - 10, 15, true, true);
 
         ctx.fillStyle = "#111827";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.font = isMobile()
+        ctx.font = mobile
           ? "900 40px Comic Sans MS, Arial"
           : "900 36px Comic Sans MS, Arial";
 
-        ctx.fillText(String(l.answer), x+w/2, y+2);
+        ctx.fillText(String(l.answer), labelX, y + 1);
       });
     });
   }
