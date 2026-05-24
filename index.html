@@ -1,574 +1,336 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-<title>Multiply Flyer — Mobile Multiplication Game</title>
-
-<style>
-:root{
-  --dark:#1f4152;
-  --yellow:#ffcf33;
-  --green:#22c55e;
-  --red:#ef4444;
-}
-*{box-sizing:border-box}
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  position:fixed;
-  inset:0;
-  overscroll-behavior:none;
-  font-family:"Comic Sans MS","Comic Neue",Arial,sans-serif;
-  background:#7dd9ff;
-  color:#123;
-}
-button,select{font-family:inherit}
-.app{
-  width:100vw;
-  height:100svh;
-  min-height:100dvh;
-  display:grid;
-  place-items:center;
-  background:linear-gradient(#74d7ff 0%,#c9f5ff 70%,#6ed365 70%,#42a846 100%);
-}
-.frame{
-  width:100vw;
-  height:100svh;
-  min-height:100dvh;
-  position:relative;
-  overflow:hidden;
-}
-canvas{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  display:block;
-  touch-action:none;
-}
-.topbar{
-  position:absolute;
-  top:env(safe-area-inset-top,0px);
-  left:6px;
-  right:6px;
-  z-index:5;
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr 1fr;
-  gap:4px;
-  pointer-events:none;
-}
-.pill{
-  background:#ffffffe8;
-  border:2px solid var(--dark);
-  border-radius:999px;
-  padding:5px 4px;
-  font-size:11px;
-  font-weight:900;
-  text-align:center;
-  white-space:nowrap;
-  box-shadow:0 3px 0 #0002;
-}
-.pill strong{
-  font-size:14px;
-  color:#0f766e;
-}
-.questionBox{
-  position:absolute;
-  z-index:6;
-  top:calc(env(safe-area-inset-top,0px) + 48px);
-  left:50%;
-  transform:translateX(-50%);
-  min-width:min(88vw,380px);
-  background:#fff;
-  border:3px solid var(--dark);
-  border-radius:20px;
-  padding:7px 12px;
-  text-align:center;
-  font-size:25px;
-  font-weight:900;
-  color:#7c2d12;
-  box-shadow:0 5px 0 #0002;
-}
-.feedback{
-  position:absolute;
-  z-index:7;
-  top:calc(env(safe-area-inset-top,0px) + 98px);
-  left:50%;
-  transform:translateX(-50%);
-  max-width:92vw;
-  background:#fff;
-  border:3px solid var(--dark);
-  border-radius:16px;
-  padding:6px 10px;
-  font-size:16px;
-  font-weight:900;
-  text-align:center;
-  opacity:0;
-  transition:.15s;
-  box-shadow:0 4px 0 #0002;
-}
-.feedback.show{opacity:1}
-.feedback.good{color:var(--green)}
-.feedback.bad{color:var(--red)}
-.panel{
-  position:absolute;
-  inset:0;
-  z-index:10;
-  display:grid;
-  place-items:center;
-  padding:10px;
-  background:linear-gradient(#ffffff66,#ffffff22);
-}
-.card{
-  width:min(94vw,760px);
-  max-height:94svh;
-  overflow:auto;
-  background:#fffffff2;
-  border:3px solid var(--dark);
-  border-radius:24px;
-  padding:16px;
-  text-align:center;
-  box-shadow:0 10px 0 #0002;
-}
-h1{
-  margin:0 0 6px;
-  font-size:36px;
-  line-height:1;
-  color:#0f766e;
-  text-shadow:2px 2px #fff;
-}
-h2{
-  margin:8px 0 10px;
-  font-size:23px;
-}
-p{
-  font-size:16px;
-  line-height:1.35;
-}
-.setup{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:10px;
-  margin:12px auto;
-}
-label{
-  display:block;
-  text-align:left;
-  font-size:16px;
-  font-weight:900;
-  margin-bottom:5px;
-}
-select{
-  width:100%;
-  font-size:18px;
-  border:2px solid var(--dark);
-  border-radius:14px;
-  padding:9px;
-  background:#fff;
-}
-.help{
-  margin-top:10px;
-  padding:9px;
-  border:2px dashed #94a3b8;
-  border-radius:16px;
-  background:#f8fafc;
-  font-size:14px;
-}
-.btnrow{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:10px;
-  margin-top:14px;
-}
-.btn{
-  border:3px solid var(--dark);
-  border-radius:18px;
-  padding:11px 16px;
-  font-size:18px;
-  font-weight:900;
-  cursor:pointer;
-  color:#123;
-  background:var(--yellow);
-  box-shadow:0 5px 0 #b77900;
-}
-.btn:active{
-  transform:translateY(3px);
-  box-shadow:0 2px 0 #b77900;
-}
-.btn.good{
-  background:#86efac;
-  box-shadow:0 5px 0 #16a34a;
-}
-.btn.secondary{
-  background:#e0f2fe;
-  box-shadow:0 5px 0 #60a5fa;
-}
-.soundBtn{
-  position:absolute;
-  z-index:8;
-  left:8px;
-  bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
-  font-size:15px;
-  padding:9px 11px;
-}
-.pauseBtn{
-  position:absolute;
-  z-index:8;
-  right:8px;
-  bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
-  font-size:15px;
-  padding:9px 11px;
-}
-.flapPad{
-  position:absolute;
-  z-index:9;
-  right:calc(env(safe-area-inset-right,0px) + 14px);
-  bottom:calc(env(safe-area-inset-bottom,0px) + 66px);
-  width:106px;
-  height:106px;
-  border-radius:50%;
-  border:5px solid var(--dark);
-  background:#fff7cc;
-  box-shadow:0 8px 0 #b77900;
-  font-size:24px;
-  line-height:1;
-  font-weight:900;
-  color:#7c2d12;
-  touch-action:none;
-  user-select:none;
-}
-.flapPad span{
-  font-size:18px;
-  color:#0f766e;
-}
-.flapPad:active{
-  transform:translateY(5px);
-  box-shadow:0 3px 0 #b77900;
-}
-.credit{
-  position:absolute;
-  z-index:4;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:calc(env(safe-area-inset-bottom,0px) + 4px);
-  font-size:10px;
-  font-weight:900;
-  color:#153243;
-  background:#ffffffbb;
-  border-radius:999px;
-  padding:2px 8px;
-}
-.hidden{display:none!important}
-.answerGrid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:8px;
-  max-height:40svh;
-  overflow:auto;
-}
-.answerCard{
-  background:#dcfce7;
-  border:2px solid #166534;
-  border-radius:14px;
-  padding:8px;
-  font-size:18px;
-  font-weight:900;
-}
-.stars{
-  font-size:30px;
-  color:#f59e0b;
-  letter-spacing:3px;
-}
-@media(min-width:761px){
-  .frame{
-    width:min(1180px,100vw - 20px);
-    height:min(720px,100vh - 20px);
-    border:5px solid var(--dark);
-    border-radius:28px;
-    box-shadow:0 18px 40px #0003;
-  }
-  .topbar{
-    top:10px;
-    left:12px;
-    right:12px;
-    gap:10px;
-  }
-  .pill{
-    font-size:18px;
-    padding:8px 14px;
-    border-width:3px;
-  }
-  .pill strong{font-size:22px}
-  .questionBox{
-    top:72px;
-    font-size:30px;
-    border-width:5px;
-  }
-  .feedback{
-    top:142px;
-    font-size:22px;
-  }
-  .setup{grid-template-columns:1fr 1fr}
-  .flapPad{display:none}
-  h1{font-size:54px}
-  h2{font-size:34px}
-  p{font-size:20px}
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Multiply Flyer — Flappy-Style Multiplication Mastery Game</title>
+  <style>
+    :root{
+      --sky:#79d7ff;
+      --sky2:#dff8ff;
+      --grass:#69c56b;
+      --dark:#234;
+      --card:#ffffffee;
+      --accent:#ffb703;
+      --good:#22c55e;
+      --bad:#ef4444;
+    }
+    *{box-sizing:border-box}
+    html,body{
+      height:100%;
+      margin:0;
+      overflow:hidden;
+      font-family:"Comic Sans MS","Comic Neue",Arial,sans-serif;
+      color:var(--dark);
+      background:linear-gradient(var(--sky),var(--sky2));
+      position:fixed;
+      inset:0;
+      overscroll-behavior:none;
+    }
+    button,input,select{font-family:inherit}
+    .app{height:100svh;min-height:100dvh;width:100vw;display:grid;place-items:center;padding:0;}
+    .frame{
+      width:100vw;
+      height:100svh;
+      min-height:100dvh;
+      background:linear-gradient(#72d4ff 0%,#b9efff 70%,#72cf62 70%,#45a94b 100%);
+      position:relative;
+      overflow:hidden;
+    }
+    .topbar{
+      position:absolute;
+      top:env(safe-area-inset-top, 0px);
+      left:6px;
+      right:6px;
+      z-index:5;
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr 1fr;
+      gap:4px;
+      pointer-events:none;
+    }
+    .pill{
+      background:var(--card);
+      border:2px solid #1f4152;
+      border-radius:999px;
+      padding:5px 4px;
+      box-shadow:0 3px 0 #0002;
+      font-size:11px;
+      font-weight:900;
+      text-align:center;
+      white-space:nowrap;
+      pointer-events:auto;
+    }
+    .pill strong{font-size:14px;color:#0f766e}
+    canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+    .panel{
+      position:absolute;
+      inset:0;
+      z-index:10;
+      display:grid;
+      place-items:center;
+      padding:10px;
+      background:linear-gradient(#ffffff55,#ffffff22);
+    }
+    .card{
+      width:min(94vw,760px);
+      max-height:94svh;
+      overflow:auto;
+      background:#fffffff4;
+      border:3px solid #1f4152;
+      border-radius:24px;
+      padding:16px;
+      box-shadow:0 10px 0 #0002;
+      text-align:center;
+    }
+    h1{margin:0 0 6px;font-size:36px;line-height:1;color:#0f766e;text-shadow:2px 2px #fff;}
+    h2{margin:8px 0 10px;font-size:23px;}
+    p{font-size:16px;line-height:1.35;margin:10px 0;}
+    .setup{display:grid;grid-template-columns:1fr;gap:10px;margin:12px auto;text-align:left;}
+    label{font-size:16px;font-weight:900;display:block;margin-bottom:5px;}
+    select,input{width:100%;font-size:18px;border:2px solid #1f4152;border-radius:14px;padding:9px;background:#fff;}
+    .btnrow{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:14px;}
+    .btn{
+      border:0;border-radius:18px;padding:11px 16px;font-size:18px;font-weight:900;cursor:pointer;color:#123;
+      background:var(--accent);border:3px solid #1f4152;box-shadow:0 5px 0 #b77900;transition:.1s transform,.1s box-shadow;
+    }
+    .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b77900;}
+    .btn.secondary{background:#e0f2fe;box-shadow:0 5px 0 #60a5fa;}
+    .btn.good{background:#86efac;box-shadow:0 5px 0 #16a34a;}
+    .help{font-size:14px;background:#f8fafc;border:2px dashed #94a3b8;border-radius:16px;padding:9px;margin-top:10px;}
+    .questionBox{
+      position:absolute;z-index:6;left:50%;top:calc(env(safe-area-inset-top, 0px) + 48px);transform:translateX(-50%);
+      background:#fff;border:3px solid #1f4152;border-radius:20px;min-width:min(88vw,380px);text-align:center;
+      padding:7px 12px;box-shadow:0 5px 0 #0002;font-size:25px;font-weight:900;color:#7c2d12;
+    }
+    .feedback{
+      position:absolute;z-index:7;left:50%;top:calc(env(safe-area-inset-top, 0px) + 98px);transform:translateX(-50%);
+      max-width:92vw;background:#fff;border:3px solid #1f4152;border-radius:16px;padding:6px 10px;
+      font-size:16px;font-weight:900;text-align:center;box-shadow:0 4px 0 #0002;opacity:0;transition:.15s opacity;
+    }
+    .feedback.show{opacity:1;}
+    .feedback.good{color:var(--good)}
+    .feedback.bad{color:var(--bad)}
+    .pauseBtn{
+      position:absolute;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:8;
+      font-size:15px;padding:9px 11px;
+    }
+    .soundBtn{
+      position:absolute;left:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:8;
+      font-size:15px;padding:9px 11px;
+    }
+    .flapPad{
+      position:absolute;
+      z-index:9;
+      right:calc(env(safe-area-inset-right,0px) + 14px);
+      bottom:calc(env(safe-area-inset-bottom,0px) + 66px);
+      width:106px;
+      height:106px;
+      border-radius:50%;
+      border:5px solid #1f4152;
+      background:#fff7cc;
+      box-shadow:0 8px 0 #b77900;
+      font-size:24px;
+      line-height:1;
+      font-weight:900;
+      color:#7c2d12;
+      touch-action:none;
+      user-select:none;
+    }
+    .flapPad span{font-size:18px;color:#0f766e;}
+    .flapPad:active{transform:translateY(5px);box-shadow:0 3px 0 #b77900;}
+    .credit{
+      position:absolute;left:50%;transform:translateX(-50%);
+      bottom:calc(env(safe-area-inset-bottom,0px) + 4px);z-index:4;
+      font-size:10px;font-weight:900;color:#153243;background:#ffffffb8;border-radius:999px;padding:2px 8px;
+    }
+    .hidden{display:none!important;}
+    .answerGrid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:14px;max-height:40svh;overflow:auto;}
+    .answerCard{background:#dcfce7;border:2px solid #166534;border-radius:14px;padding:8px;font-size:18px;font-weight:900;}
+    .stars{font-size:30px;letter-spacing:3px;color:#f59e0b;margin:8px 0;}
+    @media(min-width:761px){
+      .app{padding:10px;}
+      .frame{
+        width:min(1180px,100vw - 20px);
+        height:min(720px,100vh - 20px);
+        min-height:auto;
+        border:5px solid #1f4152;
+        border-radius:28px;
+        box-shadow:0 18px 40px #0003;
+      }
+      .topbar{top:10px;left:12px;right:12px;gap:10px}
+      .pill{font-size:18px;padding:8px 14px;border-width:3px}
+      .pill strong{font-size:22px}
+      .questionBox{top:72px;font-size:30px;border-width:5px}
+      .feedback{top:142px;font-size:22px}
+      .setup{grid-template-columns:1fr 1fr}
+      .flapPad{display:none}
+      h1{font-size:54px}
+      h2{font-size:34px}
+      p{font-size:20px}
+    }
+  </style>
 </head>
-
 <body>
-<div class="app">
-  <div class="frame" id="frame">
-    <canvas id="game"></canvas>
+  <div class="app">
+    <div class="frame" id="frame">
+      <canvas id="game"></canvas>
+      <div class="topbar">
+        <div class="pill">🪽 Flyer</div>
+        <div class="pill">Facts <strong id="score">0</strong>/<span id="targetScore">12</span></div>
+        <div class="pill">Lives <strong id="lives">❤️❤️❤️</strong></div>
+        <div class="pill">Table <strong id="best">2×</strong></div>
+      </div>
+      <div class="questionBox hidden" id="questionBox">2 × 1 = ?</div>
+      <div class="feedback" id="feedback">Good!</div>
+      <button class="btn secondary soundBtn" id="soundBtn">🔊 Sound</button>
+      <button class="btn secondary pauseBtn hidden" id="pauseBtn">⏸ Pause</button>
+      <button class="flapPad hidden" id="flapPad">TAP<br><span>FLAP</span></button>
+      <div class="credit">Designed by Lim Kim Sze © 2026</div>
 
-    <div class="topbar">
-      <div class="pill">🪽 Flyer</div>
-      <div class="pill">Facts <strong id="score">0</strong>/<span id="targetScore">12</span></div>
-      <div class="pill">Lives <strong id="lives">❤️❤️❤️</strong></div>
-      <div class="pill">Table <strong id="tableBadge">2×</strong></div>
+      <section class="panel" id="startPanel">
+        <div class="card">
+          <h1>Multiply Flyer</h1>
+          <h2>Clear all 12 facts with 3 lives!</h2>
+          <p>Tap the big button to flap. Read the large number badges and fly through the correct product gate.</p>
+          <div class="setup">
+            <div>
+              <label for="tableSelect">Multiplication table</label>
+              <select id="tableSelect">
+                <option value="2">2 times table</option>
+                <option value="3">3 times table</option>
+                <option value="4">4 times table</option>
+                <option value="5">5 times table</option>
+                <option value="6">6 times table</option>
+                <option value="7">7 times table</option>
+                <option value="8">8 times table</option>
+                <option value="9">9 times table</option>
+                <option value="10">10 times table</option>
+                <option value="11">11 times table</option>
+                <option value="12">12 times table</option>
+              </select>
+            </div>
+            <div>
+              <label for="difficulty">Difficulty</label>
+              <select id="difficulty">
+                <option value="easy">Easy — slower, bigger gates</option>
+                <option value="normal" selected>Normal</option>
+                <option value="challenge">Challenge — faster</option>
+              </select>
+            </div>
+          </div>
+          <div class="help">
+            Completion rule: answer all 12 facts from ×1 to ×12 before your 3 lives run out.
+          </div>
+          <div class="btnrow"><button class="btn good" id="startBtn">Start Timetable</button></div>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="endPanel">
+        <div class="card">
+          <h1 id="endTitle">Well done!</h1>
+          <div class="stars" id="stars">⭐⭐⭐⭐⭐</div>
+          <p id="endMsg">You completed the multiplication flight.</p>
+          <div class="answerGrid" id="reviewGrid"></div>
+          <div class="btnrow">
+            <button class="btn good" id="playAgainBtn">Play Same Table Again</button>
+            <button class="btn secondary" id="menuBtn">Back to Menu</button>
+          </div>
+        </div>
+      </section>
     </div>
-
-    <div class="questionBox hidden" id="questionBox">2 × 1 = ?</div>
-    <div class="feedback" id="feedback">Good!</div>
-
-    <button class="btn secondary soundBtn" id="soundBtn">🔊 Sound</button>
-    <button class="btn secondary pauseBtn hidden" id="pauseBtn">⏸ Pause</button>
-    <button class="flapPad hidden" id="flapPad">TAP<br><span>FLAP</span></button>
-
-    <div class="credit">Designed by Lim Kim Sze © 2026</div>
-
-    <section class="panel" id="startPanel">
-      <div class="card">
-        <h1>Multiply Flyer</h1>
-        <h2>Clear all 12 facts with 3 lives!</h2>
-        <p>Tap the big button to flap. Read the large number badges and fly through the correct product gate.</p>
-
-        <div class="setup">
-          <div>
-            <label for="tableSelect">Multiplication table</label>
-            <select id="tableSelect">
-              <option value="2">2 times table</option>
-              <option value="3">3 times table</option>
-              <option value="4">4 times table</option>
-              <option value="5">5 times table</option>
-              <option value="6">6 times table</option>
-              <option value="7">7 times table</option>
-              <option value="8">8 times table</option>
-              <option value="9">9 times table</option>
-              <option value="10">10 times table</option>
-              <option value="11">11 times table</option>
-              <option value="12">12 times table</option>
-            </select>
-          </div>
-
-          <div>
-            <label for="difficulty">Difficulty</label>
-            <select id="difficulty">
-              <option value="easy">Easy — slower, bigger gates</option>
-              <option value="normal" selected>Normal</option>
-              <option value="challenge">Challenge — faster</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="help">
-          Completion rule: answer all 12 facts from ×1 to ×12 before your 3 lives run out.
-        </div>
-
-        <div class="btnrow">
-          <button class="btn good" id="startBtn">Start Timetable</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel hidden" id="endPanel">
-      <div class="card">
-        <h1 id="endTitle">Well done!</h1>
-        <div class="stars">⭐⭐⭐⭐⭐</div>
-        <p id="endMsg">You completed the multiplication flight.</p>
-        <div class="answerGrid" id="reviewGrid"></div>
-
-        <div class="btnrow">
-          <button class="btn good" id="playAgainBtn">Play Same Table Again</button>
-          <button class="btn secondary" id="menuBtn">Back to Menu</button>
-        </div>
-      </div>
-    </section>
   </div>
-</div>
 
 <script>
 (() => {
-  const canvas = document.getElementById("game");
-  const ctx = canvas.getContext("2d");
-  const frame = document.getElementById("frame");
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const frame = document.getElementById('frame');
+  const startPanel = document.getElementById('startPanel');
+  const endPanel = document.getElementById('endPanel');
+  const startBtn = document.getElementById('startBtn');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const menuBtn = document.getElementById('menuBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const soundBtn = document.getElementById('soundBtn');
+  const flapPad = document.getElementById('flapPad');
+  const questionBox = document.getElementById('questionBox');
+  const feedback = document.getElementById('feedback');
+  const scoreEl = document.getElementById('score');
+  const livesEl = document.getElementById('lives');
+  const tableBadge = document.getElementById('best');
+  const targetScoreEl = document.getElementById('targetScore');
+  const tableSelect = document.getElementById('tableSelect');
+  const difficultyEl = document.getElementById('difficulty');
+  const endTitle = document.getElementById('endTitle');
+  const endMsg = document.getElementById('endMsg');
+  const reviewGrid = document.getElementById('reviewGrid');
+  const stars = document.getElementById('stars');
 
-  const startPanel = document.getElementById("startPanel");
-  const endPanel = document.getElementById("endPanel");
-  const startBtn = document.getElementById("startBtn");
-  const playAgainBtn = document.getElementById("playAgainBtn");
-  const menuBtn = document.getElementById("menuBtn");
-  const pauseBtn = document.getElementById("pauseBtn");
-  const soundBtn = document.getElementById("soundBtn");
-  const flapPad = document.getElementById("flapPad");
-
-  const questionBox = document.getElementById("questionBox");
-  const feedback = document.getElementById("feedback");
-  const scoreEl = document.getElementById("score");
-  const targetScoreEl = document.getElementById("targetScore");
-  const livesEl = document.getElementById("lives");
-  const tableBadge = document.getElementById("tableBadge");
-
-  const tableSelect = document.getElementById("tableSelect");
-  const difficultyEl = document.getElementById("difficulty");
-
-  const endTitle = document.getElementById("endTitle");
-  const endMsg = document.getElementById("endMsg");
-  const reviewGrid = document.getElementById("reviewGrid");
-
-  let W = 1000;
-  let H = 620;
-  let dpr = 1;
-
-  let running = false;
-  let paused = false;
-  let soundOn = true;
-
-  let bird;
-  let gates = [];
-  let particles = [];
-  let clouds = [];
-  let hills = [];
-
-  let score = 0;
-  let lives = 3;
-  let goal = 12;
-
-  let selectedTable = 2;
-  let factQueue = [];
-  let factIndex = 0;
-  let currentQ = null;
-
-  let settings = {};
-  let lastTime = 0;
-  let spawnTimer = 0;
-  let invincibleTimer = 0;
-  let history = [];
+  let W = 1000, H = 620, dpr = 1;
+  let running = false, paused = false, soundOn = true;
+  let bird, gates, particles, clouds, hills;
+  let score = 0, goal = 12, lives = 3;
+  let currentQ = null, lastTime = 0, spawnTimer = 0, settings = {}, history = [], invincibleTimer = 0, audioCtx = null;
+  let selectedTable = 2, factQueue = [], factIndex = 0;
   let celebration = null;
-  let audioCtx = null;
+
+  targetScoreEl.textContent = goal;
+  tableBadge.textContent = tableSelect.value + '×';
 
   function isMobile(){
-    return window.matchMedia("(max-width:760px), (pointer:coarse)").matches;
+    return window.matchMedia('(max-width: 760px), (pointer: coarse)').matches;
   }
 
   function resize(){
     const rect = frame.getBoundingClientRect();
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-
     canvas.width = Math.floor(rect.width * dpr);
     canvas.height = Math.floor(rect.height * dpr);
-
-    canvas.style.width = rect.width + "px";
-    canvas.style.height = rect.height + "px";
-
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
     ctx.setTransform(dpr,0,0,dpr,0,0);
-
-    W = rect.width;
-    H = rect.height;
+    W = rect.width; H = rect.height;
   }
-
-  window.addEventListener("resize", resize);
-  window.addEventListener("touchmove", e => e.preventDefault(), {passive:false});
+  window.addEventListener('resize', resize);
+  window.addEventListener('touchmove', e => e.preventDefault(), {passive:false});
   resize();
 
   function unlockAudio(){
-    if(!audioCtx){
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if(audioCtx.state === "suspended"){
-      audioCtx.resume();
-    }
+    if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    if(audioCtx.state === 'suspended') audioCtx.resume();
   }
 
-  function beep(type="tap"){
+  function beep(type='tap'){
     if(!soundOn || !audioCtx) return;
-
     const now = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
+    osc.connect(gain); gain.connect(audioCtx.destination);
     const map = {
       tap:[360,0.04,0.05],
       good:[720,0.08,0.08],
-      bad:[130,0.18,0.12],
-      win:[880,0.22,0.08]
+      bad:[130,0.2,0.12],
+      win:[880,0.25,0.08],
+      funny:[440,0.15,0.07]
     };
-
     const [freq,dur,vol] = map[type] || map.tap;
-
     osc.frequency.setValueAtTime(freq, now);
-
-    if(type === "win"){
-      osc.frequency.exponentialRampToValueAtTime(1320, now + dur);
-    }
-
+    if(type === 'win') osc.frequency.exponentialRampToValueAtTime(1320, now + dur);
+    if(type === 'funny') osc.frequency.exponentialRampToValueAtTime(220, now + dur);
     gain.gain.setValueAtTime(vol, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-
-    osc.start(now);
-    osc.stop(now + dur);
+    osc.start(now); osc.stop(now + dur);
   }
 
-  function rand(min,max){
-    return Math.random() * (max - min) + min;
-  }
-
-  function pick(arr){
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
-
-  function shuffle(arr){
-    return arr
-      .map(v => [Math.random(),v])
-      .sort((a,b) => a[0] - b[0])
-      .map(v => v[1]);
-  }
-
-  function config(){
-    const cfg = {
-      easy:{speed:130,gap:168,gravity:760,flap:-300,spawn:1.05},
-      normal:{speed:155,gap:150,gravity:820,flap:-320,spawn:0.95},
-      challenge:{speed:185,gap:132,gravity:880,flap:-340,spawn:0.85}
-    }[difficultyEl.value];
-
-    if(isMobile()){
-      cfg.speed *= 0.78;
-      cfg.gap += 24;
-      cfg.gravity *= 0.92;
-      cfg.flap *= 0.94;
-      cfg.spawn += 0.15;
-    }
-
-    return cfg;
-  }
-
-  function updateLivesDisplay(){
-    livesEl.textContent = "❤️".repeat(lives) + "♡".repeat(3 - lives);
-  }
+  function rand(min,max){return Math.random() * (max - min) + min;}
+  function pick(arr){return arr[Math.floor(Math.random() * arr.length)];}
+  function shuffle(arr){return arr.map(v => [Math.random(), v]).sort((a,b) => a[0]-b[0]).map(v => v[1]);}
 
   function buildFactQueue(){
     selectedTable = Number(tableSelect.value);
     factQueue = shuffle(Array.from({length:12}, (_,i) => i + 1));
     factIndex = 0;
-    tableBadge.textContent = selectedTable + "×";
+    tableBadge.textContent = selectedTable + '×';
   }
 
   function makeQuestion(){
@@ -576,154 +338,57 @@ select{
     const a = selectedTable;
     const answer = a * b;
     const wrongs = new Set();
-
     while(wrongs.size < 2){
-      let w;
-
-      if(Math.random() < 0.5){
-        w = selectedTable * Math.max(1, Math.min(12, b + pick([-2,-1,1,2])));
-      }else{
-        w = answer + pick([-12,-10,-9,-8,-7,-6,-5,-4,-3,3,4,5,6,7,8,9,10,12]);
-      }
-
-      if(w > 0 && w !== answer){
-        wrongs.add(w);
-      }
+      let w = answer + pick([-12,-10,-9,-8,-7,-6,-5,-4,-3,3,4,5,6,7,8,9,10,12]);
+      if(Math.random() < .5) w = selectedTable * Math.max(1, Math.min(12, b + pick([-2,-1,1,2])));
+      if(w > 0 && w !== answer) wrongs.add(w);
     }
-
-    return {
-      a,
-      b,
-      answer,
-      options:shuffle([answer, ...wrongs])
-    };
+    return {a,b,answer,options:shuffle([answer,...wrongs])};
   }
 
-  function initWorld(){
+  function config(){
+    const cfg = {
+      easy:{speed:145,gap:132,gravity:790,flap:-310,spawn:1.0},
+      normal:{speed:180,gap:112,gravity:850,flap:-330,spawn:0.9},
+      challenge:{speed:220,gap:94,gravity:900,flap:-350,spawn:0.8}
+    }[difficultyEl.value];
+
+    if(isMobile()){
+      cfg.speed *= 0.82;
+      cfg.gap += 34;
+      cfg.gravity *= 0.92;
+      cfg.flap *= 0.94;
+      cfg.spawn += 0.15;
+    }
+    return cfg;
+  }
+
+  function updateLivesDisplay(){
+    livesEl.textContent = '❤️'.repeat(lives) + '♡'.repeat(3 - lives);
+  }
+
+  function initWorld(freshFacts=true){
     settings = config();
-    buildFactQueue();
-
-    score = 0;
-    lives = 3;
-    history = [];
-    gates = [];
-    particles = [];
-    celebration = null;
-    invincibleTimer = 0;
-
-    scoreEl.textContent = score;
-    targetScoreEl.textContent = goal;
-    updateLivesDisplay();
-
-    bird = {
-      x:W * 0.22,
-      y:H * 0.42,
-      r:isMobile() ? 20 : 22,
-      vy:0,
-      rot:0
-    };
-
-    clouds = Array.from({length:7}, () => ({
-      x:rand(0,W),
-      y:rand(70,H*0.45),
-      s:rand(.55,1.4),
-      v:rand(8,22)
-    }));
-
-    hills = Array.from({length:8}, (_,i) => ({
-      x:i * (W/6),
-      w:rand(150,250),
-      h:rand(50,115)
-    }));
-
-    spawnTimer = 0.55;
+    score = 0; lives = 3; history = [];
+    if(freshFacts) buildFactQueue();
+    goal = 12;
+    targetScoreEl.textContent = goal; scoreEl.textContent = score; updateLivesDisplay();
+    bird = {x:W*0.22,y:H*0.42,r:isMobile() ? 20 : 22,vy:0,rot:0, funnyT:0};
+    gates = []; particles = [];
+    clouds = Array.from({length:7}, () => ({x:rand(0,W),y:rand(70,H*0.45),s:rand(.55,1.4),v:rand(8,22)}));
+    hills = Array.from({length:8}, (_,i) => ({x:i*(W/6),w:rand(150,250),h:rand(50,115)}));
+    spawnTimer = 0.55; invincibleTimer = 0; celebration = null;
     currentQ = makeQuestion();
     questionBox.textContent = `${currentQ.a} × ${currentQ.b} = ?`;
   }
 
   function startGame(){
-    unlockAudio();
-    initWorld();
-
-    running = true;
-    paused = false;
-    lastTime = performance.now();
-
-    startPanel.classList.add("hidden");
-    endPanel.classList.add("hidden");
-    questionBox.classList.remove("hidden");
-    pauseBtn.classList.remove("hidden");
-    flapPad.classList.remove("hidden");
-
-    pauseBtn.textContent = "⏸ Pause";
-
+    unlockAudio(); initWorld(true);
+    running = true; paused = false; lastTime = performance.now();
+    startPanel.classList.add('hidden'); endPanel.classList.add('hidden');
+    pauseBtn.classList.remove('hidden'); questionBox.classList.remove('hidden'); flapPad.classList.remove('hidden');
+    pauseBtn.textContent = '⏸ Pause';
     requestAnimationFrame(loop);
-  }
-
-  function flap(){
-    if(!running || paused || celebration) return;
-
-    unlockAudio();
-
-    bird.vy = settings.flap;
-    bird.rot = -0.45;
-
-    beep("tap");
-
-    for(let i=0;i<5;i++){
-      particles.push({
-        x:bird.x - 16,
-        y:bird.y + 10,
-        vx:rand(-90,-30),
-        vy:rand(-40,40),
-        life:.35,
-        c:"#fff"
-      });
-    }
-  }
-
-  function spawnGate(){
-    const q = currentQ;
-    const mobile = isMobile();
-
-    const playTop = mobile ? Math.max(135, H * 0.23) : 120;
-    const playBottom = mobile ? Math.min(H * 0.60, H - 210) : H * 0.68;
-    const laneH = Math.max(88, (playBottom - playTop) / 3);
-
-    const laneCenters = [
-      playTop + laneH * 0.5,
-      playTop + laneH * 1.5,
-      playTop + laneH * 2.5
-    ];
-
-    const gate = {
-      x:W + 90,
-      w:mobile ? 170 : 124,
-      q,
-      lanes:[],
-      scored:false
-    };
-
-    q.options.forEach((ans,i) => {
-      gate.lanes.push({
-        answer:ans,
-        y:laneCenters[i],
-        correct:ans === q.answer
-      });
-    });
-
-    gates = [gate];
-  }
-
-  function showFeedback(msg, good=true){
-    feedback.textContent = msg;
-    feedback.className = "feedback show " + (good ? "good" : "bad");
-
-    clearTimeout(showFeedback.t);
-
-    showFeedback.t = setTimeout(() => {
-      feedback.classList.remove("show");
-    }, 1300);
   }
 
   function loseLife(reasonText){
@@ -731,28 +396,18 @@ select{
 
     lives--;
     updateLivesDisplay();
-
-    beep("bad");
-    pop(bird.x,bird.y,"#ef4444",30);
+    beep('bad');
+    showFeedback(reasonText + ` Lives left: ${lives}`, false);
+    pop(bird.x,bird.y,'#ef4444',30);
 
     if(lives <= 0){
-      showFeedback(reasonText + " No lives left. Restart!", false);
-
-      setTimeout(() => {
-        if(!running) return;
-        initWorld();
-        showFeedback("Restart! You have 3 new lives.", false);
-      }, 850);
-
+      restartRun('No lives left! Restart from 0.');
       return;
     }
 
-    showFeedback(reasonText + ` Lives left: ${lives}`, false);
-
-    bird.y = H * 0.42;
+    bird.y = H*0.42;
     bird.vy = 0;
     bird.rot = 0;
-
     invincibleTimer = 1.0;
     gates = [];
     currentQ = makeQuestion();
@@ -760,65 +415,120 @@ select{
     spawnTimer = 0.75;
   }
 
-  function handleGate(gate,lane){
-    if(gate.scored || celebration) return;
-
-    gate.scored = true;
-
-    if(lane.correct){
-      score++;
+  function restartRun(reasonText){
+    beep('bad');
+    showFeedback(reasonText, false);
+    pop(bird.x,bird.y,'#ef4444',30);
+    bird.y = H*0.42; bird.vy = 0; bird.rot = 0;
+    setTimeout(() => {
+      if(!running) return;
+      buildFactQueue();
+      score = 0;
+      lives = 3;
+      updateLivesDisplay();
       scoreEl.textContent = score;
-      beep("good");
+      gates = [];
+      particles = [];
+      history = [];
+      currentQ = makeQuestion();
+      questionBox.textContent = `${currentQ.a} × ${currentQ.b} = ?`;
+      spawnTimer = 0.75;
+      showFeedback('Restart! You have 3 new lives.', false);
+    }, 750);
+  }
 
-      showFeedback("Correct! Keep flying!", true);
-      pop(gate.x,lane.y,"#22c55e",26);
+  function flap(){
+    if(!running || paused || celebration) return;
+    unlockAudio(); bird.vy = settings.flap; bird.rot = -0.45; beep('tap');
+    for(let i=0;i<5;i++) particles.push({x:bird.x-16,y:bird.y+10,vx:rand(-90,-30),vy:rand(-40,40),life:.35,c:'#fff'});
+  }
 
-      history.push({
-        q:`${gate.q.a} × ${gate.q.b}`,
-        answer:gate.q.answer,
-        chosen:lane.answer,
-        correct:true
-      });
-
-      nextQuestionGate(0.35);
-    }else{
-      history.push({
-        q:`${gate.q.a} × ${gate.q.b}`,
-        answer:gate.q.answer,
-        chosen:lane.answer,
-        correct:false
-      });
-
-      loseLife(`${gate.q.a} × ${gate.q.b} = ${gate.q.answer}. Wrong gate!`);
-    }
+  function spawnGate(){
+    const q = currentQ;
+    const mobile = isMobile();
+    const playTop = mobile ? 118 : 105;
+    const playBottom = H * 0.70 - (mobile ? 18 : 0);
+    const laneH = (playBottom - playTop) / 3;
+    const laneCenters = [playTop+laneH*.5, playTop+laneH*1.5, playTop+laneH*2.5];
+    const correctIndex = q.options.indexOf(q.answer);
+    const gate = {x:W+90,w:mobile ? 118 : 92,q,lanes:[],scored:false};
+    q.options.forEach((ans,i) => gate.lanes.push({answer:ans,y:laneCenters[i],correct:i===correctIndex}));
+    gates = [gate];
   }
 
   function nextQuestionGate(delay=0.45){
     gates = [];
     factIndex++;
-
     if(factIndex >= factQueue.length){
       startFunnyCompletion();
       return;
     }
-
     currentQ = makeQuestion();
     questionBox.textContent = `${currentQ.a} × ${currentQ.b} = ?`;
     spawnTimer = delay;
   }
 
+  function getAnswerBadgeRect(gate, lane){
+    const mobile = isMobile();
+    const badgeW = mobile ? 150 : 122;
+    const badgeH = mobile ? 76 : 62;
+    const rawLabelX = gate.x + gate.w / 2;
+
+    const labelX = Math.max(
+      badgeW / 2 + 10,
+      Math.min(W - badgeW / 2 - 10, rawLabelX)
+    );
+
+    return {
+      x: labelX - badgeW / 2,
+      y: lane.y - badgeH / 2,
+      w: badgeW,
+      h: badgeH,
+      cx: labelX,
+      cy: lane.y
+    };
+  }
+
+  function circleRectHit(cx, cy, r, rect){
+    const nearestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
+    const nearestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
+    const dx = cx - nearestX;
+    const dy = cy - nearestY;
+    return dx * dx + dy * dy <= r * r;
+  }
+
+  function showFeedback(msg, good=true){
+    feedback.textContent = msg;
+    feedback.className = 'feedback show ' + (good ? 'good' : 'bad');
+    clearTimeout(showFeedback.t);
+    showFeedback.t = setTimeout(() => feedback.classList.remove('show'), 1300);
+  }
+
+  function handleGate(gate,lane){
+    if(gate.scored || celebration) return;
+    gate.scored = true;
+
+    if(lane.correct){
+      score++; scoreEl.textContent = score; beep('good');
+      showFeedback('Correct! Keep flying!', true); pop(gate.x,lane.y,'#22c55e',26);
+      history.push({q:`${gate.q.a} × ${gate.q.b}`,answer:gate.q.answer,chosen:lane.answer,correct:true});
+      nextQuestionGate(0.35);
+    }else{
+      history.push({q:`${gate.q.a} × ${gate.q.b}`,answer:gate.q.answer,chosen:lane.answer,correct:false});
+      loseLife(`${gate.q.a} × ${gate.q.b} = ${gate.q.answer}. Wrong gate!`);
+    }
+  }
+
+  function pop(x,y,c,n){
+    for(let i=0;i<n;i++) particles.push({x,y,vx:rand(-180,180),vy:rand(-170,140),life:rand(.35,.9),c});
+  }
+
   function startFunnyCompletion(){
     gates = [];
     questionBox.textContent = `${selectedTable}× table complete!`;
-    showFeedback("All 12 facts completed!", true);
-    beep("win");
-
-    celebration = {
-      table:selectedTable,
-      t:0,
-      duration:3.2
-    };
-
+    showFeedback('All 12 facts correct!', true);
+    beep('win');
+    celebration = {table:selectedTable, t:0, duration:3.2};
     bird.x = W * 0.32;
     bird.y = H * 0.38;
     bird.vy = 0;
@@ -827,144 +537,74 @@ select{
   function finishGame(){
     running = false;
     celebration = null;
-
-    pauseBtn.classList.add("hidden");
-    questionBox.classList.add("hidden");
-    flapPad.classList.add("hidden");
-    feedback.classList.remove("show");
-
+    pauseBtn.classList.add('hidden'); questionBox.classList.add('hidden'); flapPad.classList.add('hidden'); feedback.classList.remove('show');
     endTitle.textContent = `${selectedTable}× Table Mastered!`;
-
-    endMsg.innerHTML =
-      `You cleared all <b>12 multiplication facts</b> for the <b>${selectedTable} times table</b> with <b>${lives} lives left</b>.`;
-
-    reviewGrid.innerHTML = history.map(item => `
-      <div class="answerCard">
-        ${item.q} = ${item.answer}<br>
-        <small>Correct gate: ${item.answer}</small>
-      </div>
-    `).join("");
-
-    endPanel.classList.remove("hidden");
+    stars.textContent = '⭐⭐⭐⭐⭐';
+    endMsg.innerHTML = `You cleared all <b>12 multiplication facts</b> for the <b>${selectedTable} times table</b> with <b>${lives} lives left</b>.`;
+    reviewGrid.innerHTML = history.map(item => `<div class="answerCard" style="background:#dcfce7">${item.q} = ${item.answer}<br><small>Correct gate: ${item.chosen}</small></div>`).join('');
+    endPanel.classList.remove('hidden');
   }
 
   function pauseToggle(){
     if(!running) return;
-
     paused = !paused;
-    pauseBtn.textContent = paused ? "▶ Resume" : "⏸ Pause";
-
-    if(!paused){
-      lastTime = performance.now();
-      requestAnimationFrame(loop);
-    }
-  }
-
-  function pop(x,y,c,n){
-    for(let i=0;i<n;i++){
-      particles.push({
-        x,
-        y,
-        vx:rand(-180,180),
-        vy:rand(-170,140),
-        life:rand(.35,.9),
-        c
-      });
-    }
+    pauseBtn.textContent = paused ? '▶ Resume' : '⏸ Pause';
+    if(!paused){ lastTime = performance.now(); requestAnimationFrame(loop); }
   }
 
   function update(dt){
-    clouds.forEach(c => {
-      c.x -= c.v * dt;
-      if(c.x < -120) c.x = W + 120;
-    });
-
-    particles.forEach(p => {
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.vy += 420 * dt;
-      p.life -= dt;
-    });
-
+    clouds.forEach(c => {c.x -= c.v*dt; if(c.x < -120) c.x = W+120;});
+    particles.forEach(p => {p.x += p.vx*dt; p.y += p.vy*dt; p.vy += 420*dt; p.life -= dt;});
     particles = particles.filter(p => p.life > 0);
-
-    if(invincibleTimer > 0){
-      invincibleTimer -= dt;
-    }
+    if(invincibleTimer > 0) invincibleTimer -= dt;
 
     if(celebration){
       celebration.t += dt;
-      runFunnyAction();
-
-      if(Math.random() < .32){
-        pop(
-          bird.x + rand(-20,20),
-          bird.y + rand(-18,18),
-          pick(["#fde047","#fb7185","#60a5fa","#86efac","#c084fc"]),
-          2
-        );
-      }
-
-      if(celebration.t > celebration.duration){
-        finishGame();
-      }
-
+      runFunnyAction(dt);
+      if(Math.random() < .32) pop(bird.x+rand(-20,20), bird.y+rand(-18,18), pick(['#fde047','#fb7185','#60a5fa','#86efac','#c084fc']), 2);
+      if(celebration.t > celebration.duration) finishGame();
       return;
     }
 
-    bird.vy += settings.gravity * dt;
-    bird.y += bird.vy * dt;
-    bird.rot = Math.min(0.75, bird.rot + dt * 2.2);
+    bird.vy += settings.gravity*dt; bird.y += bird.vy*dt; bird.rot = Math.min(0.75, bird.rot + dt*2.2);
 
     if(gates.length === 0){
       spawnTimer -= dt;
-
-      if(spawnTimer <= 0){
-        spawnGate();
-        spawnTimer = settings.spawn;
-      }
+      if(spawnTimer <= 0){ spawnGate(); spawnTimer = settings.spawn; }
     }
 
-    gates.forEach(g => {
-      g.x -= settings.speed * dt;
-    });
-
+    gates.forEach(g => g.x -= settings.speed*dt);
     gates = gates.filter(g => g.x > -160);
 
-    if(bird.y - bird.r < 0){
-      bird.y = bird.r;
-      bird.vy = 0;
-    }
+    if(bird.y - bird.r < 0){ bird.y = bird.r; bird.vy = 0; }
 
-    if(bird.y + bird.r > H * 0.70){
+    if(bird.y + bird.r > H*0.70){
       loseLife(`${currentQ.a} × ${currentQ.b} = ${currentQ.answer}. You hit the ground!`);
     }
 
     gates.forEach(g => {
       if(g.scored) return;
 
-      if(bird.x + bird.r > g.x && bird.x - bird.r < g.x + g.w){
-        const lane = g.lanes.find(l => Math.abs(bird.y - l.y) < settings.gap / 2);
+      const hitLane = g.lanes.find(l => {
+        const rect = getAnswerBadgeRect(g, l);
+        return circleRectHit(bird.x, bird.y, bird.r + 4, rect);
+      });
 
-        if(lane){
-          handleGate(g,lane);
-        }else{
-          g.scored = true;
+      if(hitLane){
+        handleGate(g, hitLane);
+        return;
+      }
 
-          history.push({
-            q:`${g.q.a} × ${g.q.b}`,
-            answer:g.q.answer,
-            chosen:"Missed gate",
-            correct:false
-          });
-
-          loseLife(`${g.q.a} × ${g.q.b} = ${g.q.answer}. Missed gate!`);
-        }
+      const firstRect = getAnswerBadgeRect(g, g.lanes[0]);
+      if(firstRect.x + firstRect.w < bird.x - bird.r && invincibleTimer <= 0){
+        g.scored = true;
+        history.push({q:`${g.q.a} × ${g.q.b}`,answer:g.q.answer,chosen:'Missed gate',correct:false});
+        loseLife(`${g.q.a} × ${g.q.b} = ${g.q.answer}. Missed gate!`);
       }
     });
   }
 
-  function runFunnyAction(){
+  function runFunnyAction(dt){
     const t = celebration.t;
     const table = celebration.table;
     const cx = W * 0.50;
@@ -977,18 +617,14 @@ select{
     }else if(table === 3){
       const phase = (t*1.4)%3;
       const pts = [[cx,cy-130],[cx-130,cy+80],[cx+130,cy+80]];
-      const a = Math.floor(phase);
-      const b = (a+1)%3;
-      const f = phase-a;
+      const a = Math.floor(phase), b = (a+1)%3, f = phase-a;
       bird.x = pts[a][0]*(1-f)+pts[b][0]*f;
       bird.y = pts[a][1]*(1-f)+pts[b][1]*f;
       bird.rot += 0.18;
     }else if(table === 4){
       const phase = (t*1.6)%4;
       const pts = [[cx-110,cy-90],[cx+110,cy-90],[cx+110,cy+90],[cx-110,cy+90]];
-      const a = Math.floor(phase);
-      const b = (a+1)%4;
-      const f = phase-a;
+      const a = Math.floor(phase), b = (a+1)%4, f = phase-a;
       bird.x = pts[a][0]*(1-f)+pts[b][0]*f;
       bird.y = pts[a][1]*(1-f)+pts[b][1]*f;
       bird.rot = Math.round(phase)*Math.PI/2;
@@ -1017,7 +653,7 @@ select{
       bird.x = cx - 260 + (t*230)%560;
       bird.y = cy - Math.sin(t*5)*60;
       bird.rot = -0.25;
-      pop(bird.x-30,bird.y+8,"#fb923c",2);
+      pop(bird.x-30,bird.y+8,'#fb923c',2);
     }else if(table === 11){
       bird.x = cx + Math.sin(t*22)*110;
       bird.y = cy + Math.sin(t*11)*55;
@@ -1026,7 +662,7 @@ select{
       bird.x = cx + Math.cos(t*6)*130;
       bird.y = cy + Math.sin(t*6)*95;
       bird.rot = t*14;
-      pop(bird.x,bird.y,"#fde047",3);
+      pop(bird.x,bird.y,'#fde047',3);
     }
   }
 
@@ -1041,40 +677,27 @@ select{
 
   function drawBackground(){
     clouds.forEach(c => {
-      ctx.save();
-      ctx.translate(c.x,c.y);
-      ctx.scale(c.s,c.s);
-      ctx.fillStyle = "rgba(255,255,255,.85)";
-      circle(0,0,25);
-      circle(25,-8,32);
-      circle(55,0,24);
-      circle(30,10,30);
+      ctx.save(); ctx.translate(c.x,c.y); ctx.scale(c.s,c.s);
+      ctx.fillStyle = 'rgba(255,255,255,.85)';
+      circle(0,0,25); circle(25,-8,32); circle(55,0,24); circle(30,10,30);
       ctx.restore();
     });
-
-    ctx.fillStyle = "#59bd5e";
-    ctx.fillRect(0,H*.70,W,H*.30);
-
-    ctx.fillStyle = "#3c9f45";
-
-    hills.forEach(h => {
+    ctx.fillStyle = '#59bd5e'; ctx.fillRect(0,H*.70,W,H*.30);
+    ctx.fillStyle = '#3c9f45';
+    for(let i=0;i<hills.length;i++){
+      const h = hills[i];
       ctx.beginPath();
       ctx.ellipse(h.x,H*.70+6,h.w,h.h,0,Math.PI,0);
       ctx.fill();
-    });
-
-    ctx.fillStyle = "#2f8f3a";
-
-    for(let x=0;x<W;x+=50){
-      ctx.fillRect(x,H*.70+16,28,9);
     }
+    ctx.fillStyle = '#2f8f3a';
+    for(let x=0;x<W;x+=50) ctx.fillRect(x,H*.70+16,28,9);
   }
 
   function drawGates(){
     gates.forEach(g => {
       const mobile = isMobile();
 
-      // Draw green gate parts first, behind the numbers.
       g.lanes.forEach(l => {
         const y = l.y;
         const gap = settings.gap;
@@ -1085,35 +708,25 @@ select{
         ctx.strokeStyle = "#12683b";
         ctx.lineWidth = mobile ? 3 : 4;
 
-        roundedRect(x,y-gap/2-34,w,28,12,true,true);
-        roundedRect(x,y+gap/2+6,w,28,12,true,true);
+        roundedRect(x, y - gap/2 - 34, w, 28, 12, true, true);
+        roundedRect(x, y + gap/2 + 6, w, 28, 12, true, true);
       });
 
-      // Draw answer number cards second, on top of the green gates.
       g.lanes.forEach(l => {
         const mobile = isMobile();
-        const y = l.y;
-        const x = g.x;
-        const w = g.w;
-
-        const badgeW = mobile ? 150 : 122;
-        const badgeH = mobile ? 76 : 62;
-
-        const rawLabelX = x + w / 2;
-        const labelX = Math.max(
-          badgeW / 2 + 10,
-          Math.min(W - badgeW / 2 - 10, rawLabelX)
-        );
+        const rect = getAnswerBadgeRect(g, l);
+        const labelX = rect.cx;
+        const y = rect.cy;
 
         ctx.fillStyle = "#ffffff";
         ctx.strokeStyle = "#1f4152";
         ctx.lineWidth = mobile ? 5 : 4;
-        roundedRect(labelX - badgeW/2, y - badgeH/2, badgeW, badgeH, 20, true, true);
+        roundedRect(rect.x, rect.y, rect.w, rect.h, 20, true, true);
 
         ctx.fillStyle = "#fff3b0";
         ctx.strokeStyle = "#7c2d12";
         ctx.lineWidth = mobile ? 4 : 3;
-        roundedRect(labelX - badgeW/2 + 7, y - badgeH/2 + 7, badgeW - 14, badgeH - 14, 16, true, true);
+        roundedRect(rect.x + 7, rect.y + 7, rect.w - 14, rect.h - 14, 16, true, true);
 
         ctx.fillStyle = "#111827";
         ctx.textAlign = "center";
@@ -1129,33 +742,30 @@ select{
 
   function drawBird(){
     if(!bird) return;
-
     ctx.save();
     ctx.translate(bird.x,bird.y);
     ctx.rotate(bird.rot);
 
-    ctx.fillStyle = "#fde68a";
-    ctx.strokeStyle = "#92400e";
+    ctx.fillStyle = '#fde68a';
+    ctx.strokeStyle = '#92400e';
     ctx.lineWidth = 3;
-
     ctx.beginPath();
     ctx.ellipse(-14,5,22,12,-0.5,0,Math.PI*2);
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = "#fbbf24";
+    ctx.fillStyle = '#fbbf24';
     ctx.beginPath();
     ctx.ellipse(0,0,25,21,0,0,Math.PI*2);
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = '#fff';
     circle(8,-8,8);
-
-    ctx.fillStyle = "#111";
+    ctx.fillStyle = '#111';
     circle(10,-8,3);
 
-    ctx.fillStyle = "#fb7185";
+    ctx.fillStyle = '#fb7185';
     ctx.beginPath();
     ctx.moveTo(22,-2);
     ctx.lineTo(38,5);
@@ -1164,32 +774,22 @@ select{
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = "#7c2d12";
-    ctx.font = "900 18px Comic Sans MS";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("×",-4,3);
+    ctx.fillStyle = '#7c2d12';
+    ctx.font = '900 18px Comic Sans MS';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('×',-4,3);
 
     if(celebration){
-      ctx.fillStyle = "#fff";
-      ctx.strokeStyle = "#1f4152";
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = '#1f4152';
       ctx.lineWidth = 2;
-
-      ctx.beginPath();
-      ctx.arc(-8,-30,8,0,Math.PI*2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(8,-30,8,0,Math.PI*2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = "#111";
+      ctx.beginPath(); ctx.arc(-8,-30,8,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(8,-30,8,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#111';
       circle(-6,-30,3);
       circle(10,-30,3);
     }
-
     ctx.restore();
   }
 
@@ -1204,35 +804,21 @@ select{
 
   function drawCelebrationLabel(){
     if(!celebration) return;
-
     const labels = {
-      2:"Double Bounce!",
-      3:"Triangle Loop!",
-      4:"Square Dance!",
-      5:"High-Five Wiggle!",
-      6:"Silly Spiral!",
-      7:"Rainbow Hop!",
-      8:"Figure-Eight Flight!",
-      9:"Moonwalk Bird!",
-      10:"Rocket Zoom!",
-      11:"Mirror Shake!",
-      12:"Champion Spin!"
+      2:'Double Bounce!',3:'Triangle Loop!',4:'Square Dance!',5:'High-Five Wiggle!',
+      6:'Silly Spiral!',7:'Rainbow Hop!',8:'Figure-Eight Flight!',9:'Moonwalk Bird!',
+      10:'Rocket Zoom!',11:'Mirror Shake!',12:'Champion Spin!'
     };
-
     ctx.save();
-
-    ctx.fillStyle = "#ffffffdd";
-    ctx.strokeStyle = "#1f4152";
+    ctx.fillStyle = '#ffffffdd';
+    ctx.strokeStyle = '#1f4152';
     ctx.lineWidth = 4;
-
-    roundedRect(W/2-185,H*.70+32,370,62,22,true,true);
-
-    ctx.fillStyle = "#7c2d12";
-    ctx.font = "900 28px Comic Sans MS, Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(labels[celebration.table], W/2, H*.70+63);
-
+    roundedRect(W/2-185,H*0.70+32,370,62,22,true,true);
+    ctx.fillStyle = '#7c2d12';
+    ctx.font = '900 28px Comic Sans MS, Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(labels[celebration.table], W/2, H*0.70+63);
     ctx.restore();
   }
 
@@ -1255,80 +841,49 @@ select{
 
   function loop(t){
     if(!running || paused) return;
-
     const dt = Math.min(0.033, (t-lastTime)/1000 || 0.016);
     lastTime = t;
-
     update(dt);
     draw();
-
-    if(running){
-      requestAnimationFrame(loop);
-    }
+    if(running) requestAnimationFrame(loop);
   }
 
-  startBtn.addEventListener("click", startGame);
-  playAgainBtn.addEventListener("click", startGame);
-
-  menuBtn.addEventListener("click", () => {
-    endPanel.classList.add("hidden");
-    startPanel.classList.remove("hidden");
-    flapPad.classList.add("hidden");
+  startBtn.addEventListener('click', startGame);
+  playAgainBtn.addEventListener('click', startGame);
+  menuBtn.addEventListener('click', () => {
+    endPanel.classList.add('hidden');
+    startPanel.classList.remove('hidden');
+    flapPad.classList.add('hidden');
     draw();
   });
-
-  pauseBtn.addEventListener("click", pauseToggle);
-
-  soundBtn.addEventListener("click", () => {
+  pauseBtn.addEventListener('click', pauseToggle);
+  soundBtn.addEventListener('click', () => {
     unlockAudio();
     soundOn = !soundOn;
-    soundBtn.textContent = soundOn ? "🔊 Sound" : "🔇 Muted";
+    soundBtn.textContent = soundOn ? '🔊 Sound' : '🔇 Muted';
   });
-
-  tableSelect.addEventListener("change", () => {
-    tableBadge.textContent = tableSelect.value + "×";
+  tableSelect.addEventListener('change', () => {
+    tableBadge.textContent = tableSelect.value + '×';
   });
-
-  canvas.addEventListener("pointerdown", flap);
-
-  flapPad.addEventListener("pointerdown", e => {
+  canvas.addEventListener('pointerdown', flap);
+  flapPad.addEventListener('pointerdown', e => {
     e.preventDefault();
     e.stopPropagation();
     flap();
   });
-
-  window.addEventListener("keydown", e => {
-    if(e.code === "Space"){
+  window.addEventListener('keydown', e => {
+    if(e.code === 'Space'){
       e.preventDefault();
       flap();
     }
-
-    if(e.code === "KeyP"){
-      pauseToggle();
-    }
+    if(e.code === 'KeyP') pauseToggle();
   });
 
-  bird = {
-    x:W * 0.22,
-    y:H * 0.42,
-    r:isMobile() ? 20 : 22,
-    vy:0,
-    rot:0
-  };
-
-  clouds = Array.from({length:7}, () => ({
-    x:rand(0,W),
-    y:rand(70,H*0.45),
-    s:rand(.55,1.4),
-    v:rand(8,22)
-  }));
-
-  hills = Array.from({length:8}, (_,i) => ({
-    x:i * (W/6),
-    w:rand(150,250),
-    h:rand(50,115)
-  }));
-
+  bird = {x:W*0.22,y:H*0.42,r:isMobile() ? 20 : 22,vy:0,rot:0};
+  gates = [];
+  particles = [];
+  clouds = Array.from({length:7}, () => ({x:rand(0,W),y:rand(70,H*0.45),s:rand(.55,1.4),v:rand(8,22)}));
+  hills = Array.from({length:8}, (_,i) => ({x:i*(W/6),w:rand(150,250),h:rand(50,115)}));
   settings = config();
   updateLivesDisplay();
   draw();
