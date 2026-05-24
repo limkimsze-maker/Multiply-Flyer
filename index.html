@@ -9,9 +9,7 @@
 :root{
   --sky:#7dd9ff;
   --sky2:#e0f8ff;
-  --grass:#5ec65f;
   --dark:#1f4152;
-  --card:#ffffffee;
   --yellow:#ffcf33;
   --green:#22c55e;
   --red:#ef4444;
@@ -75,7 +73,10 @@ canvas{
   white-space:nowrap;
   box-shadow:0 3px 0 #0002;
 }
-.pill strong{font-size:14px;color:#0f766e}
+.pill strong{
+  font-size:14px;
+  color:#0f766e;
+}
 .questionBox{
   position:absolute;
   z-index:6;
@@ -284,6 +285,7 @@ select{
   color:#f59e0b;
   letter-spacing:3px;
 }
+
 @media(min-width:761px){
   .frame{
     width:min(1180px,100vw - 20px);
@@ -296,7 +298,6 @@ select{
     top:10px;
     left:12px;
     right:12px;
-    grid-template-columns:1fr 1fr 1fr 1fr;
     gap:10px;
   }
   .pill{
@@ -320,8 +321,12 @@ select{
   h2{font-size:34px}
   p{font-size:20px}
 }
+
 @media(max-width:760px) and (orientation:landscape){
-  .questionBox{top:38px;font-size:22px}
+  .questionBox{
+    top:38px;
+    font-size:22px;
+  }
   .feedback{top:84px}
   .flapPad{
     width:88px;
@@ -558,9 +563,9 @@ select{
 
   function config(){
     const cfg = {
-      easy:{speed:145,gap:132,gravity:790,flap:-310,spawn:1.0},
-      normal:{speed:180,gap:112,gravity:850,flap:-330,spawn:0.9},
-      challenge:{speed:220,gap:96,gravity:900,flap:-350,spawn:0.8}
+      easy:{speed:145,gap:148,gravity:790,flap:-310,spawn:1.0},
+      normal:{speed:180,gap:130,gravity:850,flap:-330,spawn:0.9},
+      challenge:{speed:220,gap:112,gravity:900,flap:-350,spawn:0.8}
     }[difficultyEl.value];
 
     if(isMobile()){
@@ -710,7 +715,7 @@ select{
 
     const gate = {
       x:W + 90,
-      w:mobile ? 118 : 92,
+      w:mobile ? 150 : 112,
       q,
       lanes:[],
       scored:false
@@ -1094,23 +1099,27 @@ select{
         ctx.strokeStyle = "#12683b";
         ctx.lineWidth = 4;
 
-        roundedRect(x,y-gap/2-44,w,36,12,true,true);
-        roundedRect(x,y+gap/2+8,w,36,12,true,true);
+        roundedRect(x,y-gap/2-48,w,34,12,true,true);
+        roundedRect(x,y+gap/2+14,w,34,12,true,true);
 
         ctx.fillStyle = "#fff";
         ctx.strokeStyle = "#1f4152";
         ctx.lineWidth = 4;
+        roundedRect(x-10,y-38,w+20,76,18,true,true);
 
-        roundedRect(x-8,y-32,w+16,64,18,true,true);
+        ctx.fillStyle = "#fff8b8";
+        ctx.strokeStyle = "#7c2d12";
+        ctx.lineWidth = 3;
+        roundedRect(x-7,y-34,w+14,68,16,true,true);
 
-        ctx.fillStyle = "#fff7cc";
-        roundedRect(x-4,y-28,w+8,56,15,true,false);
-
-        ctx.fillStyle = "#1f2937";
-        ctx.font = "900 28px Comic Sans MS, Arial";
+        ctx.fillStyle = "#111827";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(l.answer, x+w/2, y+2);
+        ctx.font = isMobile()
+          ? "900 40px Comic Sans MS, Arial"
+          : "900 36px Comic Sans MS, Arial";
+
+        ctx.fillText(String(l.answer), x+w/2, y+2);
       });
     });
   }
