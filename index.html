@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-<title>Multiply Flyer — Multiplication Game</title>
+<title>Multiply Flyer — Rocket Multiplication Game</title>
 
 <style>
 :root{
@@ -363,7 +363,7 @@ select{
     <canvas id="game"></canvas>
 
     <div class="topbar">
-      <div class="pill">✈️ Flyer</div>
+      <div class="pill">🚀 Rocket</div>
       <div class="pill">Facts <strong id="score">0</strong>/<span id="targetScore">12</span></div>
       <div class="pill">Lives <strong id="lives">❤️❤️❤️</strong></div>
       <div class="pill">Table <strong id="tableBadge">2×</strong></div>
@@ -374,15 +374,15 @@ select{
 
     <button class="btn secondary soundBtn" id="soundBtn">🔊 Sound</button>
     <button class="btn secondary pauseBtn hidden" id="pauseBtn">⏸ Pause</button>
-    <button class="flapPad hidden" id="flapPad">TAP<br><span>FLAP</span></button>
+    <button class="flapPad hidden" id="flapPad">TAP<br><span>FLY</span></button>
 
     <div class="credit">Designed by Lim Kim Sze © 2026</div>
 
     <section class="panel" id="startPanel">
       <div class="card">
-        <h1>Multiply Flyer</h1>
+        <h1>Multiply Rocket</h1>
         <h2>Clear all 12 facts with 3 lives!</h2>
-        <p>Tap the big button to fly. Hit the correct number badge or the green lane behind it. Complete all 12 facts and watch the plane do a silly dance!</p>
+        <p>Tap the big button to fly. Hit the correct number badge. Complete all 12 facts and watch the rocket do a silly dance!</p>
 
         <div class="setup">
           <div>
@@ -413,7 +413,7 @@ select{
         </div>
 
         <div class="help">
-          Complete all 12 facts from ×1 to ×12 before your 3 lives run out. When you finish, the plane will celebrate with a silly dance!
+          Complete all 12 facts from ×1 to ×12 before your 3 lives run out. When you finish, the rocket will celebrate with a silly dance!
         </div>
 
         <div class="btnrow">
@@ -702,12 +702,12 @@ select{
 
     for(let i=0;i<5;i++){
       particles.push({
-        x:bird.x - 16,
-        y:bird.y + 10,
-        vx:rand(-90,-30),
-        vy:rand(-40,40),
+        x:bird.x - 22,
+        y:bird.y + 8,
+        vx:rand(-100,-35),
+        vy:rand(-35,35),
         life:.35,
-        c:"#fff"
+        c:"#fb923c"
       });
     }
   }
@@ -766,20 +766,6 @@ select{
     };
   }
 
-  function getGreenLaneRect(gate, lane){
-    const padX = isMobile() ? 34 : 22;
-    const padY = isMobile() ? 24 : 16;
-
-    return {
-      x: gate.x - padX,
-      y: lane.y - settings.gap / 2 - padY,
-      w: gate.w + padX * 2,
-      h: settings.gap + padY * 2,
-      cx: gate.x + gate.w / 2,
-      cy: lane.y
-    };
-  }
-
   function rectsOverlap(a,b){
     return (
       a.x < b.x + b.w &&
@@ -789,23 +775,22 @@ select{
     );
   }
 
-  function getPlaneHitRect(){
+  function getRocketHitRect(){
     const mobile = isMobile();
 
     return {
-      x: bird.x - (mobile ? 28 : 30),
-      y: bird.y - (mobile ? 20 : 22),
-      w: mobile ? 88 : 94,
-      h: mobile ? 44 : 48
+      x: bird.x - (mobile ? 34 : 36),
+      y: bird.y - (mobile ? 26 : 28),
+      w: mobile ? 104 : 110,
+      h: mobile ? 58 : 62
     };
   }
 
   function laneHit(gate,lane){
-    const planeRect = getPlaneHitRect();
+    const rocketRect = getRocketHitRect();
     const numberRect = getAnswerBadgeRect(gate,lane);
-    const greenRect = getGreenLaneRect(gate,lane);
 
-    return rectsOverlap(planeRect, numberRect) || rectsOverlap(planeRect, greenRect);
+    return rectsOverlap(rocketRect, numberRect);
   }
 
   function showFeedback(msg, good=true){
@@ -903,7 +888,7 @@ select{
   function startFunnyCompletion(){
     gates = [];
     questionBox.textContent = `${selectedTable}× table complete!`;
-    showFeedback("All 12 facts completed! Watch the plane dance!", true);
+    showFeedback("All 12 facts completed! Watch the rocket dance!", true);
     beep("win");
 
     celebration = {
@@ -929,7 +914,7 @@ select{
     endTitle.textContent = `${selectedTable}× Table Mastered!`;
 
     endMsg.innerHTML =
-      `You cleared all <b>12 multiplication facts</b> for the <b>${selectedTable} times table</b> with <b>${lives} lives left</b>. The plane celebrated with a silly dance!`;
+      `You cleared all <b>12 multiplication facts</b> for the <b>${selectedTable} times table</b> with <b>${lives} lives left</b>. The rocket celebrated with a silly dance!`;
 
     reviewGrid.innerHTML = history.map(item => `
       <div class="answerCard">
@@ -1047,12 +1032,7 @@ select{
 
       const allPassed = g.lanes.every(l => {
         const numberRect = getAnswerBadgeRect(g,l);
-        const greenRect = getGreenLaneRect(g,l);
-
-        return (
-          numberRect.x + numberRect.w < bird.x - bird.r &&
-          greenRect.x + greenRect.w < bird.x - bird.r
-        );
+        return numberRect.x + numberRect.w < bird.x - bird.r;
       });
 
       if(allPassed && invincibleTimer <= 0){
@@ -1140,7 +1120,7 @@ select{
     ctx.clearRect(0,0,W,H);
     drawBackground();
     drawGates();
-    drawPlane();
+    drawRocket();
     drawParticles();
     drawCelebrationLabel();
   }
@@ -1181,16 +1161,10 @@ select{
       const mobile = isMobile();
 
       g.lanes.forEach(l => {
-        const greenRect = getGreenLaneRect(g,l);
-
-        ctx.fillStyle = "rgba(53,182,111,0.30)";
-        ctx.strokeStyle = "rgba(18,104,59,0.60)";
-        ctx.lineWidth = mobile ? 3 : 4;
-        roundedRect(greenRect.x,greenRect.y,greenRect.w,greenRect.h,18,true,true);
-
         ctx.fillStyle = "#35b66f";
         ctx.strokeStyle = "#12683b";
         ctx.lineWidth = mobile ? 3 : 4;
+
         roundedRect(g.x,l.y - settings.gap/2 - 34,g.w,28,12,true,true);
         roundedRect(g.x,l.y + settings.gap/2 + 6,g.w,28,12,true,true);
       });
@@ -1221,131 +1195,110 @@ select{
     });
   }
 
-  function drawPlane(){
+  function drawRocket(){
     if(!bird) return;
 
     ctx.save();
     ctx.translate(bird.x,bird.y);
     ctx.rotate(bird.rot);
 
-    const spin = performance.now() * 0.035;
+    // Flame
+    const flicker = 8 + Math.sin(performance.now() * 0.04) * 4;
+    ctx.fillStyle = "#fb923c";
+    ctx.strokeStyle = "#c2410c";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-31, -7);
+    ctx.lineTo(-31 - flicker, 0);
+    ctx.lineTo(-31, 7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
 
-    ctx.fillStyle = "#60a5fa";
-    ctx.strokeStyle = "#1e3a8a";
+    ctx.fillStyle = "#fde047";
+    ctx.beginPath();
+    ctx.moveTo(-31, -4);
+    ctx.lineTo(-31 - flicker * 0.65, 0);
+    ctx.lineTo(-31, 4);
+    ctx.closePath();
+    ctx.fill();
+
+    // Rocket body
+    ctx.fillStyle = "#f8fafc";
+    ctx.strokeStyle = "#1f4152";
+    ctx.lineWidth = 3;
+    roundedRect(-32, -14, 56, 28, 14, true, true);
+
+    // Nose cone
+    ctx.fillStyle = "#ef4444";
+    ctx.strokeStyle = "#991b1b";
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(-6, 2);
-    ctx.lineTo(-30, 20);
-    ctx.lineTo(5, 12);
+    ctx.moveTo(20, -14);
+    ctx.quadraticCurveTo(43, 0, 20, 14);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(-30, -4);
-    ctx.lineTo(-44, -20);
-    ctx.lineTo(-18, -10);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(-31, 5);
-    ctx.lineTo(-45, 16);
-    ctx.lineTo(-20, 11);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = "#fde68a";
-    ctx.strokeStyle = "#92400e";
-    ctx.lineWidth = 3;
-    roundedRect(-32, -15, 58, 30, 15, true, true);
-
-    ctx.beginPath();
-    ctx.moveTo(24, -13);
-    ctx.quadraticCurveTo(42, 0, 24, 13);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = "#93c5fd";
+    // Window
+    ctx.fillStyle = "#bfdbfe";
     ctx.strokeStyle = "#1d4ed8";
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(-2, -3);
-    ctx.lineTo(20, -21);
-    ctx.lineTo(7, 3);
+    ctx.arc(2, 0, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Cute face in window
+    ctx.fillStyle = "#111827";
+    ctx.beginPath();
+    ctx.arc(0, -2, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(5, -2, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#111827";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(2.5, 2, 3, 0.2, 2.8);
+    ctx.stroke();
+
+    // Top fin
+    ctx.fillStyle = "#60a5fa";
+    ctx.strokeStyle = "#1d4ed8";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-12, -13);
+    ctx.lineTo(-24, -28);
+    ctx.lineTo(2, -14);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = "#ffffff";
-    ctx.strokeStyle = "#1f4152";
-    ctx.lineWidth = 2;
-
+    // Bottom fin
     ctx.beginPath();
-    ctx.ellipse(-7, -5, 8, 6, 0, 0, Math.PI * 2);
+    ctx.moveTo(-12, 13);
+    ctx.lineTo(-24, 28);
+    ctx.lineTo(2, 14);
+    ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
+    // Stripe
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.ellipse(6, -5, 7, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(-18, 0);
+    ctx.lineTo(16, 0);
     ctx.stroke();
 
-    ctx.fillStyle = "#111827";
-    ctx.beginPath();
-    ctx.arc(11, -3, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = "#7c2d12";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(14, 5, 4, 0.2, 2.5);
-    ctx.stroke();
-
-    ctx.strokeStyle = "#fb7185";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(-20, 3);
-    ctx.lineTo(18, 3);
-    ctx.stroke();
-
-    ctx.fillStyle = "#d1d5db";
-    ctx.strokeStyle = "#374151";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(32, 0, 4.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.save();
-    ctx.translate(32, 0);
-    ctx.rotate(spin);
-    ctx.strokeStyle = "#6b7280";
-    ctx.lineWidth = 3;
-
-    for(let i=0;i<4;i++){
-      ctx.rotate(Math.PI/2);
-      ctx.beginPath();
-      ctx.moveTo(0,0);
-      ctx.lineTo(0,14);
-      ctx.stroke();
-    }
-
-    ctx.restore();
-
-    ctx.fillStyle = "rgba(251,113,133,0.45)";
-    ctx.beginPath();
-    ctx.arc(18, 7, 3.2, 0, Math.PI * 2);
-    ctx.fill();
-
+    // Celebration hat
     if(celebration){
       ctx.fillStyle = "#7c3aed";
       ctx.strokeStyle = "#4c1d95";
       ctx.lineWidth = 2;
-      roundedRect(-2, -18, 17, 8, 4, true, true);
+      roundedRect(-3, -21, 16, 8, 4, true, true);
     }
 
     ctx.restore();
@@ -1371,7 +1324,7 @@ select{
       6:"Silly Spiral!",
       7:"Rainbow Hop!",
       8:"Figure-Eight Flight!",
-      9:"Moonwalk Plane!",
+      9:"Moonwalk Rocket!",
       10:"Rocket Zoom!",
       11:"Mirror Shake!",
       12:"Champion Spin!"
