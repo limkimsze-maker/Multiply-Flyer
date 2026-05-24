@@ -1072,8 +1072,10 @@ select{
 
   function drawGates(){
     gates.forEach(g => {
+      const mobile = isMobile();
+
+      // Draw green gate parts first, behind the numbers.
       g.lanes.forEach(l => {
-        const mobile = isMobile();
         const y = l.y;
         const gap = settings.gap;
         const x = g.x;
@@ -1083,43 +1085,44 @@ select{
         ctx.strokeStyle = "#12683b";
         ctx.lineWidth = mobile ? 3 : 4;
 
-        roundedRect(x,y-gap/2-46,w,32,12,true,true);
-        roundedRect(x,y+gap/2+14,w,32,12,true,true);
+        roundedRect(x,y-gap/2-34,w,28,12,true,true);
+        roundedRect(x,y+gap/2+6,w,28,12,true,true);
+      });
 
-        const badgeW = mobile ? 136 : 112;
-        const badgeH = mobile ? 68 : 58;
+      // Draw answer number cards second, on top of the green gates.
+      g.lanes.forEach(l => {
+        const mobile = isMobile();
+        const y = l.y;
+        const x = g.x;
+        const w = g.w;
+
+        const badgeW = mobile ? 150 : 122;
+        const badgeH = mobile ? 76 : 62;
 
         const rawLabelX = x + w / 2;
         const labelX = Math.max(
-          badgeW / 2 + 8,
-          Math.min(W - badgeW / 2 - 8, rawLabelX)
+          badgeW / 2 + 10,
+          Math.min(W - badgeW / 2 - 10, rawLabelX)
         );
-
-        ctx.strokeStyle = "#1f4152";
-        ctx.lineWidth = mobile ? 4 : 3;
-        ctx.beginPath();
-        ctx.moveTo(labelX, y);
-        ctx.lineTo(x + w / 2, y);
-        ctx.stroke();
 
         ctx.fillStyle = "#ffffff";
         ctx.strokeStyle = "#1f4152";
-        ctx.lineWidth = 4;
-        roundedRect(labelX - badgeW/2, y - badgeH/2, badgeW, badgeH, 18, true, true);
+        ctx.lineWidth = mobile ? 5 : 4;
+        roundedRect(labelX - badgeW/2, y - badgeH/2, badgeW, badgeH, 20, true, true);
 
-        ctx.fillStyle = "#fff8b8";
+        ctx.fillStyle = "#fff3b0";
         ctx.strokeStyle = "#7c2d12";
-        ctx.lineWidth = 3;
-        roundedRect(labelX - badgeW/2 + 5, y - badgeH/2 + 5, badgeW - 10, badgeH - 10, 15, true, true);
+        ctx.lineWidth = mobile ? 4 : 3;
+        roundedRect(labelX - badgeW/2 + 7, y - badgeH/2 + 7, badgeW - 14, badgeH - 14, 16, true, true);
 
         ctx.fillStyle = "#111827";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.font = mobile
-          ? "900 40px Comic Sans MS, Arial"
-          : "900 36px Comic Sans MS, Arial";
+          ? "900 44px Comic Sans MS, Arial"
+          : "900 38px Comic Sans MS, Arial";
 
-        ctx.fillText(String(l.answer), labelX, y + 1);
+        ctx.fillText(String(l.answer), labelX, y + 2);
       });
     });
   }
