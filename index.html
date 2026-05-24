@@ -363,7 +363,7 @@ select{
     <canvas id="game"></canvas>
 
     <div class="topbar">
-      <div class="pill">🪽 Flyer</div>
+      <div class="pill">✈️ Flyer</div>
       <div class="pill">Facts <strong id="score">0</strong>/<span id="targetScore">12</span></div>
       <div class="pill">Lives <strong id="lives">❤️❤️❤️</strong></div>
       <div class="pill">Table <strong id="tableBadge">2×</strong></div>
@@ -382,7 +382,7 @@ select{
       <div class="card">
         <h1>Multiply Flyer</h1>
         <h2>Clear all 12 facts with 3 lives!</h2>
-        <p>Tap the big button to flap. Hit the correct number badge or the green lane behind it.</p>
+        <p>Tap the big button to fly. Hit the correct number badge or the green lane behind it. Complete all 12 facts and watch the plane do a silly dance!</p>
 
         <div class="setup">
           <div>
@@ -413,7 +413,7 @@ select{
         </div>
 
         <div class="help">
-          Complete all 12 facts from ×1 to ×12 before your 3 lives run out.
+          Complete all 12 facts from ×1 to ×12 before your 3 lives run out. When you finish, the plane will celebrate with a silly dance!
         </div>
 
         <div class="btnrow">
@@ -789,23 +789,23 @@ select{
     );
   }
 
-  function getBirdHitRect(){
+  function getPlaneHitRect(){
     const mobile = isMobile();
 
     return {
-      x: bird.x - (mobile ? 22 : 24),
-      y: bird.y - (mobile ? 23 : 25),
-      w: mobile ? 76 : 80,
-      h: mobile ? 52 : 56
+      x: bird.x - (mobile ? 28 : 30),
+      y: bird.y - (mobile ? 20 : 22),
+      w: mobile ? 88 : 94,
+      h: mobile ? 44 : 48
     };
   }
 
   function laneHit(gate,lane){
-    const birdRect = getBirdHitRect();
+    const planeRect = getPlaneHitRect();
     const numberRect = getAnswerBadgeRect(gate,lane);
     const greenRect = getGreenLaneRect(gate,lane);
 
-    return rectsOverlap(birdRect, numberRect) || rectsOverlap(birdRect, greenRect);
+    return rectsOverlap(planeRect, numberRect) || rectsOverlap(planeRect, greenRect);
   }
 
   function showFeedback(msg, good=true){
@@ -903,7 +903,7 @@ select{
   function startFunnyCompletion(){
     gates = [];
     questionBox.textContent = `${selectedTable}× table complete!`;
-    showFeedback("All 12 facts completed!", true);
+    showFeedback("All 12 facts completed! Watch the plane dance!", true);
     beep("win");
 
     celebration = {
@@ -929,7 +929,7 @@ select{
     endTitle.textContent = `${selectedTable}× Table Mastered!`;
 
     endMsg.innerHTML =
-      `You cleared all <b>12 multiplication facts</b> for the <b>${selectedTable} times table</b> with <b>${lives} lives left</b>.`;
+      `You cleared all <b>12 multiplication facts</b> for the <b>${selectedTable} times table</b> with <b>${lives} lives left</b>. The plane celebrated with a silly dance!`;
 
     reviewGrid.innerHTML = history.map(item => `
       <div class="answerCard">
@@ -1140,7 +1140,7 @@ select{
     ctx.clearRect(0,0,W,H);
     drawBackground();
     drawGates();
-    drawBird();
+    drawPlane();
     drawParticles();
     drawCelebrationLabel();
   }
@@ -1221,67 +1221,131 @@ select{
     });
   }
 
-  function drawBird(){
+  function drawPlane(){
     if(!bird) return;
 
     ctx.save();
     ctx.translate(bird.x,bird.y);
     ctx.rotate(bird.rot);
 
-    ctx.fillStyle = "#fde68a";
-    ctx.strokeStyle = "#92400e";
+    const spin = performance.now() * 0.035;
+
+    ctx.fillStyle = "#60a5fa";
+    ctx.strokeStyle = "#1e3a8a";
     ctx.lineWidth = 3;
-
     ctx.beginPath();
-    ctx.ellipse(-14,5,22,12,-0.5,0,Math.PI*2);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = "#fbbf24";
-    ctx.beginPath();
-    ctx.ellipse(0,0,25,21,0,0,Math.PI*2);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = "#fff";
-    circle(8,-8,8);
-
-    ctx.fillStyle = "#111";
-    circle(10,-8,3);
-
-    ctx.fillStyle = "#fb7185";
-    ctx.beginPath();
-    ctx.moveTo(22,-2);
-    ctx.lineTo(38,5);
-    ctx.lineTo(22,12);
+    ctx.moveTo(-6, 2);
+    ctx.lineTo(-30, 20);
+    ctx.lineTo(5, 12);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = "#7c2d12";
-    ctx.font = "900 18px Comic Sans MS";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("×",-4,3);
+    ctx.beginPath();
+    ctx.moveTo(-30, -4);
+    ctx.lineTo(-44, -20);
+    ctx.lineTo(-18, -10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(-31, 5);
+    ctx.lineTo(-45, 16);
+    ctx.lineTo(-20, 11);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#fde68a";
+    ctx.strokeStyle = "#92400e";
+    ctx.lineWidth = 3;
+    roundedRect(-32, -15, 58, 30, 15, true, true);
+
+    ctx.beginPath();
+    ctx.moveTo(24, -13);
+    ctx.quadraticCurveTo(42, 0, 24, 13);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#93c5fd";
+    ctx.strokeStyle = "#1d4ed8";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-2, -3);
+    ctx.lineTo(20, -21);
+    ctx.lineTo(7, 3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#1f4152";
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.ellipse(-7, -5, 8, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(6, -5, 7, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#111827";
+    ctx.beginPath();
+    ctx.arc(11, -3, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#7c2d12";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(14, 5, 4, 0.2, 2.5);
+    ctx.stroke();
+
+    ctx.strokeStyle = "#fb7185";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-20, 3);
+    ctx.lineTo(18, 3);
+    ctx.stroke();
+
+    ctx.fillStyle = "#d1d5db";
+    ctx.strokeStyle = "#374151";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(32, 0, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(32, 0);
+    ctx.rotate(spin);
+    ctx.strokeStyle = "#6b7280";
+    ctx.lineWidth = 3;
+
+    for(let i=0;i<4;i++){
+      ctx.rotate(Math.PI/2);
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.lineTo(0,14);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+
+    ctx.fillStyle = "rgba(251,113,133,0.45)";
+    ctx.beginPath();
+    ctx.arc(18, 7, 3.2, 0, Math.PI * 2);
+    ctx.fill();
 
     if(celebration){
-      ctx.fillStyle = "#fff";
-      ctx.strokeStyle = "#1f4152";
+      ctx.fillStyle = "#7c3aed";
+      ctx.strokeStyle = "#4c1d95";
       ctx.lineWidth = 2;
-
-      ctx.beginPath();
-      ctx.arc(-8,-30,8,0,Math.PI*2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(8,-30,8,0,Math.PI*2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = "#111";
-      circle(-6,-30,3);
-      circle(10,-30,3);
+      roundedRect(-2, -18, 17, 8, 4, true, true);
     }
 
     ctx.restore();
@@ -1307,7 +1371,7 @@ select{
       6:"Silly Spiral!",
       7:"Rainbow Hop!",
       8:"Figure-Eight Flight!",
-      9:"Moonwalk Bird!",
+      9:"Moonwalk Plane!",
       10:"Rocket Zoom!",
       11:"Mirror Shake!",
       12:"Champion Spin!"
